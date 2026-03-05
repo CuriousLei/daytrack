@@ -7,14 +7,21 @@ export interface WorkTrace {
   metadata?: Record<string, any>;
 }
 
-// Git commit 痕迹
+// Git commit 痕迹（详细）
 export interface GitCommitTrace extends WorkTrace {
   source: 'git';
   repo: string;
+  repoName: string;
   hash: string;
+  shortHash: string;
   message: string;
+  body?: string;
   author: string;
+  authorEmail: string;
+  timestamp: Date;
   filesChanged: string[];
+  additions?: number;
+  deletions?: number;
 }
 
 // 手动输入的工作项
@@ -27,9 +34,9 @@ export interface ManualTrace extends WorkTrace {
 export interface DailyReport {
   id: string;
   date: string; // YYYY-MM-DD
-  traces: WorkTrace[];
+  traceIds: string[];
   generatedContent: string;
-  editedContent?: string; // 用户编辑后的内容
+  editedContent?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,13 +45,17 @@ export interface DailyReport {
 export interface LLMProvider {
   name: string;
   isConfigured(): boolean;
+  validateConfig?(): Promise<boolean>;
   generate(prompt: string, options?: LLMOptions): Promise<string>;
+  getModels?(): Promise<string[]>;
 }
 
 export interface LLMOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  topP?: number;
+  stream?: boolean;
 }
 
 // 配置文件结构

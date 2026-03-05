@@ -1,6 +1,7 @@
 import * as inquirer from 'inquirer';
 import * as chalk from 'chalk';
-import { saveConfig, Config } from '../shared/config';
+import { saveConfig } from '../shared/config';
+import { Config } from '../shared/types';
 
 export async function runSetupWizard(): Promise<void> {
   console.log(chalk.bold.blue('\n🚀 Welcome to daytrack!\n'));
