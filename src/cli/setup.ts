@@ -1,5 +1,5 @@
 import * as inquirer from 'inquirer';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { saveConfig } from '../shared/config';
 import { Config } from '../shared/types';
 
