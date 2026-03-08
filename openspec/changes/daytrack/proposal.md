@@ -6,10 +6,12 @@
 
 - **新增**：每日自动采集 git commit 记录的功能
 - **新增**：调用大模型生成日报的功能（优先 OpenAI，支持扩展火山方舟等）
-- **新增**：极简现代风格的网页界面，用于查看和编辑日报
+- **新增**：简单的网页界面，用于查看和生成日报（第一期简化版，不做复杂功能）
 - **新增**：CLI 配置向导，引导用户选择模型、配置 API key
+- **新增**：`daytrack add` 命令 - 扫描当前目录和下一级的 Git 仓库并自动添加到配置
 - **新增**：可扩展的架构，方便以后接入更多工作痕迹来源
 - **新增**：GitHub + git 安装方式，方便在其他电脑上运行
+- **修复**：统一配置字段名（README 中的 git.repos → git.repositories，与代码保持一致）
 - **移除**：第一期不做全局悬浮输入框（后期再加）
 
 ## Capabilities
@@ -20,6 +22,7 @@
 - `daily-report-generator`: 调用大模型，基于采集的工作痕迹生成日报（支持 OpenAI、火山方舟等扩展）
 - `web-ui`: 极简现代风格的网页界面，提供日报查看和编辑功能
 - `cli-setup-wizard`: 命令行配置向导，引导用户选择模型、配置 API key
+- `cli-repo-add`: `daytrack add` 命令，扫描指定路径（默认当前目录）的 Git 仓库并添加到配置
 - `extensible-trace-source`: 可扩展的工作痕迹采集架构，支持后续接入更多来源
 
 ### Modified Capabilities
@@ -33,7 +36,7 @@
 - **新增依赖**：OpenAI SDK（支持扩展火山方舟等）
 - **新增依赖**：交互式 CLI 库（如 inquirer 或 prompts）
 - **系统集成**：需要与本地 git 仓库交互
-- **分发方式**：GitHub + git 安装，其他电脑可直接 `npm install -g git+https://github.com/你的账号/daytrack.git`
+- **分发方式**：GitHub + git 安装，其他电脑可直接 `npm install -g git+https://github.com/CuriousLei/daytrack.git`
 
 ## 分发方式
 
@@ -41,7 +44,7 @@
 
 ```bash
 # 确保已安装 Node.js 和 git
-npm install -g git+https://github.com/你的账号/daytrack.git
+npm install -g git+https://github.com/CuriousLei/daytrack.git
 
 # 运行配置向导
 daytrack
@@ -56,5 +59,5 @@ daytrack web
 # 在开发电脑上修改代码 → push 到 GitHub
 
 # 在其他电脑上更新
-npm install -g git+https://github.com/你的账号/daytrack.git
+npm install -g git+https://github.com/CuriousLei/daytrack.git
 ```

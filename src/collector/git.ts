@@ -1,9 +1,10 @@
 import simpleGit, { SimpleGit, LogResult, DefaultLogFields } from 'simple-git';
 import * as path from 'path';
 import * as fs from 'fs';
-import { GitCommitTrace } from '../shared/types';
+import { GitCommitTrace, WorkTrace } from '../shared/types';
 import { insertTrace, getTraces } from '../storage/sqlite';
-import { loadConfig } from '../shared/config';
+import { loadConfig, saveConfig } from '../shared/config';
+import { TraceCollector, collectorRegistry } from './index';
 
 export class GitCollector {
   private git: SimpleGit;
@@ -136,4 +137,85 @@ export function getTodayDateRange(): { since: Date; until: Date } {
   const since = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
   const until = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
   return { since, until };
+}
+
+export function normalizePath(p: string): string {
+  let normalized = p;
+  if (normalized.startsWith('~')) {
+    const home = process.env.HOME || '';
+    normalized = path.join(home, normalized.slice(1));
+  }
+  normalized = path.resolve(normalized);
+  normalized = normalized.replace(/[\/\\]$/, '');
+  return normalized;
+}
+
+function isGitRepo(dirPath: string): boolean {
+  try {
+    const gitDir = path.join(dirPath, '.git');
+    return fs.existsSync(gitDir) && fs.statSync(gitDir).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+export function findGitRepos(basePath: string): string[] {
+  const repos: string[] = [];
+  const normalizedBase = normalizePath(basePath);
+
+  if (!fs.existsSync(normalizedBase) || !fs.statSync(normalizedBase).isDirectory()) {
+    return repos;
+  }
+
+  if (isGitRepo(normalizedBase)) {
+    repos.push(normalizedBase);
+  }
+
+  try {
+    const entries = fs.readdirSync(normalizedBase, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const fullPath = path.join(normalizedBase, entry.name);
+        if (isGitRepo(fullPath)) {
+          repos.push(fullPath);
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`Error reading directory ${normalizedBase}:`, error);
+  }
+
+  return repos;
+}
+
+export function addReposToConfig(newRepos: string[]): { added: string[]; skipped: string[] } {
+  const config = loadConfig() || {
+    llm: { defaultProvider: 'openai', providers: {} },
+    git: { repositories: [] }
+  };
+
+  if (!config.git) {
+    config.git = { repositories: [] };
+  }
+
+  const existingRepos = new Set(config.git.repositories.map(normalizePath));
+  const added: string[] = [];
+  const skipped: string[] = [];
+
+  for (const repo of newRepos) {
+    const normalizedRepo = normalizePath(repo);
+    if (existingRepos.has(normalizedRepo)) {
+      skipped.push(normalizedRepo);
+    } else {
+      added.push(normalizedRepo);
+      config.git.repositories.push(normalizedRepo);
+      existingRepos.add(normalizedRepo);
+    }
+  }
+
+  if (added.length > 0) {
+    saveConfig(config);
+  }
+
+  return { added, skipped };
 }

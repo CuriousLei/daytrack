@@ -22,7 +22,7 @@
 
 ```bash
 # 克隆项目
-git clone <repository-url>
+git clone https://github.com/CuriousLei/daytrack.git
 cd daytrack
 
 # 安装依赖
@@ -38,7 +38,7 @@ npm link
 ### 在其他电脑上安装
 
 ```bash
-npm install -g git+https://github.com/你的账号/daytrack.git
+npm install -g git+https://github.com/CuriousLei/daytrack.git
 ```
 
 ## 快速开始
@@ -108,6 +108,22 @@ daytrack web --port 8080
 daytrack setup
 ```
 
+### `daytrack add [path]`
+
+扫描并添加 Git 仓库到配置中。
+
+**参数：**
+- `path`（可选）：要扫描的路径，默认为当前工作目录
+
+**示例：**
+```bash
+# 扫描当前目录
+daytrack add
+
+# 扫描指定路径
+daytrack add ~/work
+```
+
 ### `daytrack collect`
 
 采集工作痕迹。
@@ -147,12 +163,16 @@ daytrack setup
 ```json
 {
   "llm": {
-    "provider": "openai",
-    "apiKey": "sk-...",
-    "model": "gpt-4"
+    "defaultProvider": "openai",
+    "providers": {
+      "openai": {
+        "apiKey": "sk-...",
+        "model": "gpt-4"
+      }
+    }
   },
   "git": {
-    "repos": [
+    "repositories": [
       "/path/to/project1",
       "/path/to/project2"
     ]
@@ -191,7 +211,7 @@ daytrack/
 
 ### Q: 如何添加更多的 Git 仓库？
 
-A: 运行 `daytrack setup` 重新配置，或直接编辑 `~/.config/daytrack/config.json` 文件中的 `git.repos` 数组。
+A: 运行 `daytrack add` 命令自动扫描并添加，或运行 `daytrack setup` 重新配置，也可以直接编辑 `~/.config/daytrack/config.json` 文件中的 `git.repositories` 数组。
 
 ### Q: 生成的日报不满意，如何调整？
 

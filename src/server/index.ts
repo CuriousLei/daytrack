@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import path from 'path';
 import { getTraces, insertTrace, deleteTrace, getTraceById } from '../storage/sqlite';
 import { collectAllGitRepos, getTodayDateRange } from '../collector/git';
 import { dailyReportService } from '../generator/service';
@@ -12,6 +13,9 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.use(cors());
 app.use(express.json());
+
+const publicDir = path.join(__dirname, '../../public');
+app.use(express.static(publicDir));
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', version: '0.1.0' });

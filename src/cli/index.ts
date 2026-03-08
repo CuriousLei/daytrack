@@ -4,7 +4,7 @@ import { Command } from 'commander';
 import { configExists, loadConfig } from '../shared/config';
 import { runSetupWizard } from './setup';
 import { startServer } from '../server';
-import { collectAllGitRepos, getTodayDateRange } from '../collector/git';
+import { collectAllGitRepos, getTodayDateRange, findGitRepos, addReposToConfig, normalizePath } from '../collector/git';
 import { dailyReportService } from '../generator/service';
 import chalk from 'chalk';
 
@@ -20,6 +20,38 @@ program
   .description('Run configuration wizard')
   .action(async () => {
     await runSetupWizard();
+  });
+
+program
+  .command('add [path]')
+  .description('Scan and add Git repositories to config')
+  .action(async (pathArg) => {
+    const targetPath = pathArg || process.cwd();
+    const normalizedPath = normalizePath(targetPath);
+    
+    console.log(chalk.blue(`Scanning ${normalizedPath} and subdirectories...`));
+    
+    const foundRepos = findGitRepos(normalizedPath);
+    
+    if (foundRepos.length === 0) {
+      console.log(chalk.yellow('No Git repositories found.'));
+      return;
+    }
+    
+    console.log(chalk.green(`\nFound ${foundRepos.length} Git repository${foundRepos.length > 1 ? 'ies' : ''}:`));
+    
+    const { added, skipped } = addReposToConfig(foundRepos);
+    
+    for (const repo of added) {
+      console.log(chalk.green(`  ✓ Added: ${repo}`));
+    }
+    
+    for (const repo of skipped) {
+      console.log(chalk.gray(`  ↓ Skipped: ${repo} (already in config)`));
+    }
+    
+    console.log(chalk.blue(`\nSummary: Added ${added.length} new repository${added.length !== 1 ? 'ies' : ''}`) + 
+                (skipped.length > 0 ? chalk.gray(`, skipped ${skipped.length}`) : ''));
   });
 
 program
